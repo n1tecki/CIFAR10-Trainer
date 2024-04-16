@@ -1,11 +1,11 @@
 import torch
 from typing import Tuple
 from abc import ABCMeta, abstractmethod
-
 from pathlib import Path
 from tqdm import tqdm
 
-
+# for wandb users:
+from dlvc.wandb_logger import WandBLogger
 
 class BaseTrainer(metaclass=ABCMeta):
     '''
@@ -15,7 +15,7 @@ class BaseTrainer(metaclass=ABCMeta):
     @abstractmethod
     def train(self) -> None:
         '''
-        Returns the number of samples in the dataset.
+        Holds training logic.
         '''
 
         pass
@@ -23,7 +23,7 @@ class BaseTrainer(metaclass=ABCMeta):
     @abstractmethod
     def _val_epoch(self) -> Tuple[float, float, float]:
         '''
-        Returns the number of samples in the dataset.
+        Holds validation logic for one epoch.
         '''
 
         pass
@@ -31,7 +31,7 @@ class BaseTrainer(metaclass=ABCMeta):
     @abstractmethod
     def _train_epoch(self) -> Tuple[float, float, float]:
         '''
-        Returns the number of samples in the dataset.
+        Holds training logic for one epoch.
         '''
 
         pass
@@ -113,7 +113,7 @@ class ImgClassificationTrainer(BaseTrainer):
 
     def train(self) -> None:
         """
-        Full training logic that loopes over num_epochs and
+        Full training logic that loops over num_epochs and
         uses the _train_epoch and _val_epoch methods.
         Save the model if mean per class accuracy on validation data set is higher
         than currently saved best mean per class accuracy. 

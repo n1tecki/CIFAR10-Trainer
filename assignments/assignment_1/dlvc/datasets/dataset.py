@@ -1,16 +1,6 @@
-
 from abc import ABCMeta, abstractmethod
-from collections import namedtuple
 from enum import Enum
 from typing import Tuple
-
-'''
-A dataset sample.
-  idx: index of the sample in the dataset.
-      The index should lie between 0 and len(dataset)-1, it should *not* be the index in the original cifar-10 dataset.
-  data: sample data.
-  label: target label.
-'''
 
 
 

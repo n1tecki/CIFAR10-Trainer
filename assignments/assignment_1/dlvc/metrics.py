@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-
 import torch
 
 class PerformanceMeasure(metaclass=ABCMeta):

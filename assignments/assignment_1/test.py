@@ -5,10 +5,11 @@ import torch
 import torchvision.transforms.v2 as v2
 import os
 
-
+from torchvision.models import resnet18 # change to the model you want to test
 from dlvc.models.class_model import DeepClassifier
 from dlvc.metrics import Accuracy
 from dlvc.datasets.cifar10 import CIFAR10Dataset
+from dlvc.datasets.dataset import Subset
 
 
 

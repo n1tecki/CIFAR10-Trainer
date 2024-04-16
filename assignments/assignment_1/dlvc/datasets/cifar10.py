@@ -1,8 +1,7 @@
 import pickle
-from typing import List, Tuple
+from typing import Tuple
 import numpy as np
-import random
-from collections import Counter
+
 
 from dlvc.datasets.dataset import  Subset, ClassificationDataset
 
@@ -22,7 +21,7 @@ class CIFAR10Dataset(ClassificationDataset):
           - The validation set contains all images from "data_batch_5".
           - The test set contains all images from "test_batch".
 
-        Images are loaded in the order the appear in the data files
+        Images are loaded in the order they appear in the data files
         and returned as uint8 numpy arrays with shape (32, 32, 3), in RGB channel order.
         '''
 
@@ -42,7 +41,8 @@ class CIFAR10Dataset(ClassificationDataset):
 
     def __getitem__(self, idx: int) -> Tuple:
         '''
-        Returns the idx-th sample in the dataset.
+        Returns the idx-th sample in the dataset, which is a tuple,
+        consisting of the image and labels.
         Applies transforms if not None.
         Raises IndexError if the index is out of bounds.
         '''

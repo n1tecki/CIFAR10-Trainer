@@ -6,9 +6,12 @@ import torchvision.transforms.v2 as v2
 from pathlib import Path
 import os
 
-from dlvc.models.class_model import DeepClassifier
+from dlvc.models.class_model import DeepClassifier # etc. change to your model
 from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
+from dlvc.datasets.cifar10 import CIFAR10Dataset
+from dlvc.datasets.dataset import Subset
+
 
 
 
@@ -18,6 +21,7 @@ def train(args):
     ### Implement this function so that it trains a specific model as described in the instruction.md file
     ## feel free to change the code snippets given here, they are just to give you an initial structure 
     ## but do not have to be used if you want to do it differently
+    ## For device handling you can take a look at pytorch documentation
     
     
     train_transform = v2.Compose([v2.ToImage(), 
@@ -35,7 +39,7 @@ def train(args):
     
  
         
-    device = ...
+    device = ... 
 
     model = DeepClassifier(...)
     model.to(device)
@@ -70,7 +74,7 @@ def train(args):
 if __name__ == "__main__":
     ## Feel free to change this part - you do not have to use this argparse and gpu handling
     args = argparse.ArgumentParser(description='Training')
-    args.add_argument('-d', '--gpu_id', default='5', type=str,
+    args.add_argument('-d', '--gpu_id', default='0', type=str,
                       help='index of which GPU to use')
     
     if not isinstance(args, tuple):
