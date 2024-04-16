@@ -6,7 +6,7 @@ This text or the reference code might not be without errors. If you find a signi
 
 ## Part 0 - Overview
 
-Familiarize yourself with the code in the code folder (assignment_1_code) and make sure that the file structure is preserved. Read the code and make sure that you understand what the individual classes and methods are doing. A good starting point might be the `train.py` file, to see what method or class is used for what. 
+Familiarize yourself with the code in the code folder (dlvc) and make sure that the file structure is preserved. Read the code and make sure that you understand what the individual classes and methods are doing. A good starting point might be the `train.py` file, to see what method or class is used for what. 
 
 ## Part 1 - Dataset
 
