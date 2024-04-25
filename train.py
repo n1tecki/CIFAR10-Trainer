@@ -11,6 +11,9 @@ from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
 from dlvc.datasets.cifar10 import CIFAR10Dataset
 from dlvc.datasets.dataset import Subset
+from torchvision.models import resnet18
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import ExponentialLR
 
 
 
@@ -33,17 +36,19 @@ def train(args):
                             v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
     
     
-    train_data = ...
+    train_data = CIFAR10Dataset(args.data_path, subset = Subset.TRAINING, transform=train_transform)
     
-    val_data = ...
+    val_data = CIFAR10Dataset(args.data_path, subset = Subset.VALIDATION, transform=val_transform)
     
  
         
-    device = ... 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = DeepClassifier(...)
+    resnet18_pre = resnet18(pretrained=False)
+    model = DeepClassifier(resnet18_pre)
     model.to(device)
-    optimizer = ...
+
+    optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
     loss_fn = torch.nn.CrossEntropyLoss()
     
     train_metric = Accuracy(classes=train_data.classes)
@@ -53,7 +58,7 @@ def train(args):
     model_save_dir = Path("saved_models")
     model_save_dir.mkdir(exist_ok=True)
 
-    lr_scheduler = ...
+    lr_scheduler = ExponentialLR(optimizer, gamma=0.9)
     
     trainer = ImgClassificationTrainer(model, 
                     optimizer,
@@ -72,15 +77,12 @@ def train(args):
 
 
 if __name__ == "__main__":
-    ## Feel free to change this part - you do not have to use this argparse and gpu handling
-    args = argparse.ArgumentParser(description='Training')
-    args.add_argument('-d', '--gpu_id', default='0', type=str,
-                      help='index of which GPU to use')
+    parser = argparse.ArgumentParser(description='Training setup')
+    parser.add_argument('--num_epochs', default=30, type=int, help='Number of epochs to train for')
+    parser.add_argument('--gpu_id', default='0', type=str, help='GPU ID to use')
+    parser.add_argument('--data_path', required=True, type=str, help='Directory path to CIFAR-10 dataset') 
+    # "C:/Users/mariu/Documents/deep_learning_for_visual_computing/cifar-10-python/"
     
-    if not isinstance(args, tuple):
-        args = args.parse_args()
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
-    args.gpu_id = 0 
-    args.num_epochs = 30
-
+    args = parser.parse_args()
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     train(args)
