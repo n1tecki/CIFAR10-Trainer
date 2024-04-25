@@ -1,6 +1,9 @@
 import pickle
 from typing import Tuple
 import numpy as np
+import os
+import sys
+sys.path.append('c:\\Users\\mariu\\Documents\\deep_learning_for_visual_computing\\dlvc_ss24') 
 
 
 from dlvc.datasets.dataset import  Subset, ClassificationDataset
@@ -24,20 +27,44 @@ class CIFAR10Dataset(ClassificationDataset):
         Images are loaded in the order they appear in the data files
         and returned as uint8 numpy arrays with shape (32, 32, 3), in RGB channel order.
         '''
+        self.transform = transform
 
         self.classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+        self.data = []
+        self.labels = []
         
-        ## TODO implement
-        # See the CIFAR-10 website on how to load the data files
-        pass
 
+        if not os.path.isdir(fdir):
+            raise ValueError("Directory does not exist!")
+        
+        if subset == Subset.TRAINING:
+            batch_files = [f"data_batch_{i}" for i in range(1, 5)]
+        elif subset == Subset.VALIDATION:
+            batch_files = ["data_batch_5"]
+        elif subset == Subset.TEST:
+            batch_files = ["test_batch"]
+        
+        for file in batch_files:
+            try:
+                with open(fdir + file, 'rb') as fo:
+                    dict = pickle.load(fo, encoding='bytes')
+            except:
+                raise ValueError(f"File {file} does not exist")
+            
+            self.labels.extend(dict[b'labels'])
+            self.data.extend(dict[b'data'])
+
+        self.data = np.vstack(self.data).reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
+        self.annot_labels = [self.classes[int(label)] for label in self.labels]
+
+        
     def __len__(self) -> int:
         '''
         Returns the number of samples in the dataset.
         '''
-        ## TODO implement
-        pass
+        return len(self.labels)
+
 
     def __getitem__(self, idx: int) -> Tuple:
         '''
@@ -46,13 +73,27 @@ class CIFAR10Dataset(ClassificationDataset):
         Applies transforms if not None.
         Raises IndexError if the index is out of bounds.
         '''
-        ## TODO implement
-        pass
+        img = self.data[idx]
+        label = self.labels[idx]
+
+        if self.transform:
+            img = self.transform(img)
+
+        return img, label
+
 
     def num_classes(self) -> int:
         '''
         Returns the number of classes.
         '''
-        ## TODO implement
-        pass
+        labels_array = np.array(self.labels)
+        count_per_class = np.bincount(labels_array)
+        return count_per_class
 
+
+
+# Testing
+# object = CIFAR10Dataset(fdir = "C:/Users/mariu/Documents/deep_learning_for_visual_computing/cifar-10-python/", subset = Subset.TRAINING)
+# object.__len__()
+# object.__len__()
+# print(object.__getitem__(2))
