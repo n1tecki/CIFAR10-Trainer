@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 import os
 import sys
-sys.path.append('c:\\Users\\mariu\\Documents\\deep_learning_for_visual_computing\\dlvc_ss24') 
+# sys.path.append('c:\\Users\\mariu\\Documents\\deep_learning_for_visual_computing\\dlvc_ss24') 
 
 
 from dlvc.datasets.dataset import  Subset, ClassificationDataset
@@ -47,10 +47,11 @@ class CIFAR10Dataset(ClassificationDataset):
         
         for file in batch_files:
             try:
-                with open(fdir + file, 'rb') as fo:
+                full_path = os.path.join(fdir, file)
+                with open(full_path, 'rb') as fo:
                     dict = pickle.load(fo, encoding='bytes')
             except:
-                raise ValueError(f"File {file} does not exist")
+                raise ValueError(f"File {full_path} does not exist")
             
             self.labels.extend(dict[b'labels'])
             self.data.extend(dict[b'data'])

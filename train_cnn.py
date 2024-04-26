@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms.v2 as v2
-from dlvc.models.class_model import YourCNN
+from dlvc.models.class_model import DeepClassifier
 from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
 from dlvc.datasets.cifar10 import CIFAR10Dataset
@@ -32,7 +32,7 @@ def train(args):
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = YourCNN()
+    model = DeepClassifier()
     model.to(device)
 
     optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
