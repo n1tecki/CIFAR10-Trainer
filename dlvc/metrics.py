@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 import torch
 
 class PerformanceMeasure(metaclass=ABCMeta):
@@ -48,7 +49,14 @@ class Accuracy(PerformanceMeasure):
         Resets the internal state.
         '''
         ## TODO implement
-        pass
+        self.correct_predictions = 0
+        self.total_predictions = 0
+
+        self.class_correct_predictions = defaultdict(int)
+        self.class_correct_predictions.update({class_name: 0 for class_name in self.classes})
+        
+        self.class_total_predictions = defaultdict(int)
+        self.class_total_predictions.update({class_name: 0 for class_name in self.classes})
 
     def update(self, prediction: torch.Tensor, 
                target: torch.Tensor) -> None:
@@ -60,7 +68,12 @@ class Accuracy(PerformanceMeasure):
         '''
 
         ## TODO implement
-        pass
+        self.total_predictions += target.shape[0]
+        predicted_classes = torch.argmax(prediction, dim=1)
+        true_predictions = target[predicted_classes == target]
+
+        for true_class in target:
+            self.class_total_predictions[true_class] += 1
 
     def __str__(self):
         '''
