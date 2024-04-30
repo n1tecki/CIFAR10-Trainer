@@ -1,0 +1,22 @@
+Performance Metrics:
+Overall Accuracy: 0.48
+Average Per Class Accuracy: 0.48
+plane : 0.5060210737581535
+car : 0.594079277471149
+bird : 0.3374505928853755
+cat : 0.3373493975903614
+deer : 0.38196352735448413
+dog : 0.40553459119496854
+frog : 0.576865671641791
+horse : 0.5416355953268704
+ship : 0.621466099574681
+truck : 0.5361990950226244
+Traceback (most recent call last):
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\train.py", line 91, in <module>
+    train(args)
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\train.py", line 79, in train
+    trainer.train()
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\trainer.py", line 186, in train
+    "val/loss": val_epoch_loss,
+                ^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'val_epoch_loss' where it is not associated with a value

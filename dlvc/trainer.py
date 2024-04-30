@@ -122,6 +122,7 @@ class ImgClassificationTrainer(BaseTrainer):
             # Update training metric
             self.train_metric.update(outputs, targets)
             
+        print(f"Training Epoch: {epoch_idx} Loss: {loss}")
         print(self.train_metric)
 
         return epoch_loss, epoch_acc, epoch_pc_acc
@@ -145,6 +146,7 @@ class ImgClassificationTrainer(BaseTrainer):
             epoch_loss += loss.item()
             self.val_metric.update(outputs, targets)
 
+        print(f"Validation Epoch: {epoch_idx} Loss: {loss}")
         print(self.train_metric)
 
         return epoch_loss, epoch_acc, epoch_pc_acc
@@ -160,12 +162,12 @@ class ImgClassificationTrainer(BaseTrainer):
         ## TODO implement
         curr_val_epoch_pc_acc = 0.0
         keys = [
-            "train_epoch_loss",
-            "train_epoch_acc",
-            "train_epoch_pc_acc",
-            "val_epoch_loss",
-            "val_epoch_acc",
-            "val_epoch_pc_acc"
+            "train/loss",
+            "train/mAcc",
+            "train/mClassAcc",
+            "val/loss",
+            "val/mAcc",
+            "val/mClassAcc"
         ]
         epoch_dict = dict.fromkeys(keys, 0.0)
 
@@ -174,6 +176,12 @@ class ImgClassificationTrainer(BaseTrainer):
 
             if epoch_idx % self.val_frequency == 0:
                 val_epoch_loss, val_epoch_acc, val_epoch_pc_acc = self._val_epoch(epoch_idx)
+
+                epoch_dict.update({
+                "val/loss": val_epoch_loss,
+                "val/mAcc": val_epoch_acc,
+                "val/mClassAcc": val_epoch_pc_acc
+                })
                 
                 if val_epoch_pc_acc > curr_val_epoch_pc_acc:
                     self.model.save(self.training_save_dir)
@@ -182,10 +190,7 @@ class ImgClassificationTrainer(BaseTrainer):
             epoch_dict.update({
                 "train/loss": epoch_loss,
                 "train/mAcc": epoch_acc,
-                "train/mClassAcc": epoch_pc_acc,
-                "val/loss": val_epoch_loss,
-                "val/mAcc": val_epoch_acc,
-                "val/mClassAcc": val_epoch_pc_acc
+                "train/mClassAcc": epoch_pc_acc
                 })
             self.wandb_logger.log(log_dict=epoch_dict, step=epoch_idx)
         self.wandb_logger.finish()
