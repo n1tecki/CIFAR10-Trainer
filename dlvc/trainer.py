@@ -115,7 +115,6 @@ class ImgClassificationTrainer(BaseTrainer):
             inputs, targets = inputs.to(self.device), targets.to(self.device) #move data to device gpu/cpu
             self.optimizer.zero_grad() #clear gradients from previous iteration
             outputs = self.model(inputs) # output for restnet [batch_size, 1000], should be [batch_size, 10] for cifar10
-            output = outputs
             loss = self.loss_fn(outputs, targets) # calculate loss
             loss.backward() # calculate gradients
             self.optimizer.step() # update weights | MODEL LEARNS HERE
@@ -123,11 +122,7 @@ class ImgClassificationTrainer(BaseTrainer):
             # Update training metric
             self.train_metric.update(outputs, targets)
             
-
-        # Get metrics
-        epoch_acc = self.train_metric.accuracy()
-        epoch_pc_acc = self.train_metric.per_class_accuracy()
-        print(f"Epoch {epoch_idx}: Train Loss: {epoch_loss:.4f}, Train Acc: {epoch_acc:.4f}, Train Per Class Acc: {epoch_pc_acc:.4f}")
+        print(self.train_metric)
 
         return epoch_loss, epoch_acc, epoch_pc_acc
 
@@ -150,9 +145,7 @@ class ImgClassificationTrainer(BaseTrainer):
             epoch_loss += loss.item()
             self.val_metric.update(outputs, targets)
 
-        epoch_acc = self.train_metric.accuracy()
-        epoch_pc_acc = self.train_metric.per_class_accuracy()
-        print(f"Validation Epoch: {epoch_idx}: Validation Loss: {epoch_loss:.4f}, Validation Acc: {epoch_acc:.4f}, Validation Per Class Acc: {epoch_pc_acc:.4f}")
+        print(self.train_metric)
 
         return epoch_loss, epoch_acc, epoch_pc_acc
         
@@ -187,22 +180,22 @@ class ImgClassificationTrainer(BaseTrainer):
                     curr_val_epoch_pc_acc = val_epoch_pc_acc
 
             epoch_dict.update({
-                "train_epoch_loss": epoch_loss,
-                "train_epoch_acc": epoch_acc,
-                "train_epoch_pc_acc": epoch_pc_acc,
-                "val_epoch_loss": val_epoch_loss,
-                "val_epoch_acc": val_epoch_acc,
-                "val_epoch_pc_acc": val_epoch_pc_acc
+                "train/loss": epoch_loss,
+                "train/mAcc": epoch_acc,
+                "train/mClassAcc": epoch_pc_acc,
+                "val/loss": val_epoch_loss,
+                "val/mAcc": val_epoch_acc,
+                "val/mClassAcc": val_epoch_pc_acc
                 })
             self.wandb_logger.log(log_dict=epoch_dict, step=epoch_idx)
         self.wandb_logger.finish()
 
                 
-# Tests
+# # Tests
 # def main(DATA_PATH = "cifar-10-batches-py"):
 #     from torchvision.models import resnet18
 #     NUM_CLASSES = 10
-#     NUM_EPOCHS = 3
+#     NUM_EPOCHS = 1
 
 #     train_transform = v2.Compose([v2.ToImage(), 
 #                             v2.ToDtype(torch.float32, scale=True),

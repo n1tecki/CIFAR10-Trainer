@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 import torch
 import numpy as np
+from typing import Tuple, Dict
 
 class PerformanceMeasure(metaclass=ABCMeta):
     '''
@@ -40,7 +41,7 @@ class Accuracy(PerformanceMeasure):
     Average classification accuracy.
     '''
     __slots__ = ["classes", "correct_predictions", "total_predictions", 
-                 "class_correct_predictions", "class_total_predictions"]
+                 "class_correct_predictions", "class_total_predictions", "accuracy_per_class"]
 
     def __init__(self, classes) -> None:
         self.classes = classes
@@ -59,10 +60,13 @@ class Accuracy(PerformanceMeasure):
             classes = classes.numpy()
 
         self.class_correct_predictions = defaultdict(int)
-        self.class_correct_predictions.update({class_name: 0 for class_name in classes})
+        self.class_correct_predictions.update({classes.index(class_name): 0 for class_name in classes})
         
         self.class_total_predictions = defaultdict(int)
-        self.class_total_predictions.update({class_name: 0 for class_name in classes})
+        self.class_total_predictions.update({classes.index(class_name): 0 for class_name in classes})
+
+        self.accuracy_per_class = defaultdict(int)
+        self.class_total_predictions.update({classes.index(class_name): 0 for class_name in classes})
 
     def update(self, prediction: torch.Tensor, 
                target: torch.Tensor) -> None:
@@ -103,6 +107,8 @@ class Accuracy(PerformanceMeasure):
         performance_str = f"Performance Metrics:\n"
         performance_str += f"Overall Accuracy: {accuracy:.2f}\n"
         performance_str += f"Average Per Class Accuracy: {per_class_accuracy:.2f}\n"
+        for class_num, accuracy in self.accuracy_per_class.items():
+            performance_str += f"{self.classes[class_num]} : {accuracy}\n"
 
         return performance_str
 
@@ -127,16 +133,16 @@ class Accuracy(PerformanceMeasure):
         if self.total_predictions == 0:
             return 0
         
-        accuracy_per_class = defaultdict(int)
+        self.accuracy_per_class = defaultdict(int)
         num_predicted_classes = 0
         for c, total_prediction in self.class_total_predictions.items():
             if total_prediction == 0:
-                accuracy_per_class[c] = 0
+                self.accuracy_per_class[c] = 0
             else:
-                accuracy_per_class[c] = self.class_correct_predictions[c] / total_prediction
+                self.accuracy_per_class[c] = self.class_correct_predictions[c] / total_prediction
                 num_predicted_classes += 1
 
-        return sum(accuracy_per_class.values()) / num_predicted_classes
+        return sum(self.accuracy_per_class.values()) / num_predicted_classes
 
 # Tests
 # classes = torch.tensor(np.array([0,1,2,3]))

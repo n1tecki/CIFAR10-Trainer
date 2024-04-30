@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\trainer.py", line 280, in <module>
+    main()
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\trainer.py", line 260, in main
+    trainer.train()
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\trainer.py", line 182, in train
+    epoch_loss, epoch_acc, epoch_pc_acc = self._train_epoch(epoch_idx)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\trainer.py", line 131, in _train_epoch
+    print(self.train_metric)
+  File "D:\studia\VI semestr\deep_learning for visual computing\assignment1_mariusz_wojtek\CIFAR10-Trainer\dlvc\metrics.py", line 111, in __str__
+    performance_str += f"{self.classes[int(class_num)]} : {accuracy}\n"
+                                       ^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'plane'

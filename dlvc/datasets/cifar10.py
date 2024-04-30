@@ -29,8 +29,7 @@ class CIFAR10Dataset(ClassificationDataset):
         '''
         self.transform = transform
 
-        self.classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+        self.classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
         self.data = []
         self.labels = []
         

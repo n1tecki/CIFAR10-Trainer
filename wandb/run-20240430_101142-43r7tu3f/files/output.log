@@ -1,0 +1,10 @@
+
+Epoch 1: Train Loss: 449.2293, Train Acc: 0.4794, Train Per Class Acc: 0.4795
+Validation Epoch: 1: Validation Loss: 93.4391, Validation Acc: 0.4794, Validation Per Class Acc: 0.4795
+[34m[1mwandb[39m[22m: [33mWARNING[39m Step only supports monotonically increasing values, use define_metric to set a custom x axis. For details see: https://wandb.me/define-metric
+[34m[1mwandb[39m[22m: [33mWARNING[39m (User provided step: 1 is less than current step: 2. Dropping entry: {'val_epoch_loss': 93.43907272815704, 'val_epoch_acc': 0.4794, 'val_epoch_pc_acc': 0.4795394362865652, '_timestamp': 1714464778.4461005}).
+Epoch 2: Train Loss: 327.8636, Train Acc: 0.5537, Train Per Class Acc: 0.5538
+Validation Epoch: 2: Validation Loss: 79.4657, Validation Acc: 0.5537, Validation Per Class Acc: 0.5538
+[34m[1mwandb[39m[22m: [33mWARNING[39m (User provided step: 2 is less than current step: 3. Dropping entry: {'val_epoch_loss': 79.46570068597794, 'val_epoch_acc': 0.5536625, 'val_epoch_pc_acc': 0.5537511139457895, '_timestamp': 1714464860.8938613}).
+Epoch 3: Train Loss: 265.2057, Train Acc: 0.6030, Train Per Class Acc: 0.6031
+Validation Epoch: 3: Validation Loss: 75.7009, Validation Acc: 0.6030, Validation Per Class Acc: 0.6031
