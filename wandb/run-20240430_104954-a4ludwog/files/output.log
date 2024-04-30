@@ -1,7 +1,0 @@
-
-Epoch 1: Train Loss: 463.5378, Train Acc: 0.4666, Train Per Class Acc: 0.4667
-Validation Epoch: 1: Validation Loss: 97.9260, Validation Acc: 0.4666, Validation Per Class Acc: 0.4667
-Epoch 2: Train Loss: 334.5885, Train Acc: 0.5423, Train Per Class Acc: 0.5424
-Validation Epoch: 2: Validation Loss: 81.3697, Validation Acc: 0.5423, Validation Per Class Acc: 0.5424
-Epoch 3: Train Loss: 275.0271, Train Acc: 0.5917, Train Per Class Acc: 0.5918
-Validation Epoch: 3: Validation Loss: 75.0012, Validation Acc: 0.5917, Validation Per Class Acc: 0.5918
