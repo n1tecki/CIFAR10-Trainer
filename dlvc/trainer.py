@@ -122,6 +122,8 @@ class ImgClassificationTrainer(BaseTrainer):
             # Update training metric
             self.train_metric.update(outputs, targets)
             
+        epoch_acc = self.train_metric.accuracy()
+        epoch_pc_acc = self.train_metric.per_class_accuracy()
         print(f"Training Epoch: {epoch_idx} Loss: {loss}")
         print(self.train_metric)
 
@@ -146,6 +148,8 @@ class ImgClassificationTrainer(BaseTrainer):
             epoch_loss += loss.item()
             self.val_metric.update(outputs, targets)
 
+        epoch_acc = self.train_metric.accuracy()
+        epoch_pc_acc = self.train_metric.per_class_accuracy()
         print(f"Validation Epoch: {epoch_idx} Loss: {loss}")
         print(self.train_metric)
 
@@ -196,7 +200,7 @@ class ImgClassificationTrainer(BaseTrainer):
         self.wandb_logger.finish()
 
                 
-# # Tests
+# Tests
 # def main(DATA_PATH = "cifar-10-batches-py"):
 #     from torchvision.models import resnet18
 #     NUM_CLASSES = 10
