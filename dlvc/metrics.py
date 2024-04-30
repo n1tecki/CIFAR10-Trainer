@@ -75,8 +75,8 @@ class Accuracy(PerformanceMeasure):
 
         ## TODO implement
         # extracting numpy arrays from Tensor
-        prediction = prediction.numpy()
-        target = target.numpy()
+        prediction = prediction.detach().numpy() #.detach() to create a new tensor that does not require gradients and then convert to numpy array
+        target = target.detach().numpy()
 
         # updates for accuracy
         self.total_predictions += target.shape[0]

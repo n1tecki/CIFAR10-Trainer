@@ -69,6 +69,7 @@ class ImgClassificationTrainer(BaseTrainer):
             batch_size (int): number of samples in one batch 
             val_frequency (int): how often validation is conducted during training (if it is 5 then every 5th 
                                 epoch we evaluate model on validation set)
+            wandb_logger (WandBLogger): logs metrics during training to WeightsAndBiases account
 
         What does it do:
             - Stores given variables as instance variables for use in other class methods e.g. self.model = model.
@@ -95,6 +96,8 @@ class ImgClassificationTrainer(BaseTrainer):
         # DataLoaders for Map-style datasets
         self.train_loader = DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
         self.val_loader = DataLoader(self.val_data, batch_size=self.batch_size, shuffle=False)
+
+        self.wandb_logger = WandBLogger(model=self.model)
         
 
     def _train_epoch(self, epoch_idx: int) -> Tuple[float, float, float]:
@@ -111,24 +114,19 @@ class ImgClassificationTrainer(BaseTrainer):
         for idx, (inputs, targets) in enumerate(self.train_loader): # batch_idx (Tensor, Tensor)
             inputs, targets = inputs.to(self.device), targets.to(self.device) #move data to device gpu/cpu
             self.optimizer.zero_grad() #clear gradients from previous iteration
-            print("INPUTS:", inputs)
-            print("MODEL TYPE:", type(self.model))
-            outputs = self.model(inputs)
+            outputs = self.model(inputs) # output for restnet [batch_size, 1000], should be [batch_size, 10] for cifar10
+            output = outputs
             loss = self.loss_fn(outputs, targets) # calculate loss
             loss.backward() # calculate gradients
-            self.optimizer.step() # update weights
+            self.optimizer.step() # update weights | MODEL LEARNS HERE
             epoch_loss += loss.item()
-            
-            print(self.model)
-            print("OUTPUTS: ", outputs) 
-            print("TARGETS: ",targets)
             # Update training metric
             self.train_metric.update(outputs, targets)
+            
 
         # Get metrics
         epoch_acc = self.train_metric.accuracy()
         epoch_pc_acc = self.train_metric.per_class_accuracy()
-
         print(f"Epoch {epoch_idx}: Train Loss: {epoch_loss:.4f}, Train Acc: {epoch_acc:.4f}, Train Per Class Acc: {epoch_pc_acc:.4f}")
 
         return epoch_loss, epoch_acc, epoch_pc_acc
@@ -143,10 +141,21 @@ class ImgClassificationTrainer(BaseTrainer):
         epoch_idx (int): Current epoch number
         """
         ## TODO implement
-        pass
+        self.model.eval()
+        epoch_loss, epoch_acc, epoch_pc_acc = 0.0, 0.0, 0.0
+        for idx, (inputs, targets) in enumerate(self.val_loader):
+            inputs, targets = inputs.to(self.device), targets.to(self.device)
+            outputs = self.model(inputs)
+            loss = self.loss_fn(outputs, targets)
+            epoch_loss += loss.item()
+            self.val_metric.update(outputs, targets)
 
+        epoch_acc = self.train_metric.accuracy()
+        epoch_pc_acc = self.train_metric.per_class_accuracy()
+        print(f"Validation Epoch: {epoch_idx}: Validation Loss: {epoch_loss:.4f}, Validation Acc: {epoch_acc:.4f}, Validation Per Class Acc: {epoch_pc_acc:.4f}")
+
+        return epoch_loss, epoch_acc, epoch_pc_acc
         
-
     def train(self) -> None:
         """
         Full training logic that loops over num_epochs and
@@ -156,74 +165,117 @@ class ImgClassificationTrainer(BaseTrainer):
         Depending on the val_frequency parameter, validation is not performed every epoch.
         """
         ## TODO implement
-        pass
+        curr_val_epoch_pc_acc = 0.0
+        keys = [
+            "train_epoch_loss",
+            "train_epoch_acc",
+            "train_epoch_pc_acc",
+            "val_epoch_loss",
+            "val_epoch_acc",
+            "val_epoch_pc_acc"
+        ]
+        epoch_dict = dict.fromkeys(keys, 0.0)
+
+        for epoch_idx in range(1, self.num_epochs+1):
+            epoch_loss, epoch_acc, epoch_pc_acc = self._train_epoch(epoch_idx)
+
+            if epoch_idx % self.val_frequency == 0:
+                val_epoch_loss, val_epoch_acc, val_epoch_pc_acc = self._val_epoch(epoch_idx)
+                
+                if val_epoch_pc_acc > curr_val_epoch_pc_acc:
+                    self.model.save(self.training_save_dir)
+                    curr_val_epoch_pc_acc = val_epoch_pc_acc
+
+            epoch_dict.update({
+                "train_epoch_loss": epoch_loss,
+                "train_epoch_acc": epoch_acc,
+                "train_epoch_pc_acc": epoch_pc_acc,
+                "val_epoch_loss": val_epoch_loss,
+                "val_epoch_acc": val_epoch_acc,
+                "val_epoch_pc_acc": val_epoch_pc_acc
+                })
+            self.wandb_logger.log(log_dict=epoch_dict, step=epoch_idx)
+        self.wandb_logger.finish()
 
                 
 # Tests
-def main(DATA_PATH = "cifar-10-batches-py"):
-    train_transform = v2.Compose([v2.ToImage(), 
-                            v2.ToDtype(torch.float32, scale=True),
-                            v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
+# def main(DATA_PATH = "cifar-10-batches-py"):
+#     from torchvision.models import resnet18
+#     NUM_CLASSES = 10
+#     NUM_EPOCHS = 3
+
+#     train_transform = v2.Compose([v2.ToImage(), 
+#                             v2.ToDtype(torch.float32, scale=True),
+#                             v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
     
-    val_transform = v2.Compose([v2.ToImage(), 
-                            v2.ToDtype(torch.float32, scale=True),
-                            v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
+#     val_transform = v2.Compose([v2.ToImage(), 
+#                             v2.ToDtype(torch.float32, scale=True),
+#                             v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
     
     
-    train_data = CIFAR10Dataset(DATA_PATH, subset = Subset.TRAINING, transform=train_transform)
+#     train_data = CIFAR10Dataset(DATA_PATH, subset = Subset.TRAINING, transform=train_transform)
     
-    val_data = CIFAR10Dataset(DATA_PATH, subset = Subset.VALIDATION, transform=val_transform)
+
+#     val_data = CIFAR10Dataset(DATA_PATH, subset = Subset.VALIDATION, transform=val_transform)
+            
+#     device = torch.device("cpu")
         
-    device = torch.device("cpu")
-
-    resnet18_pre = resnet18(pretrained=False)
-    model = DeepClassifier(resnet18_pre)
-    model.to(device)
-
-    optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
-    loss_fn = torch.nn.CrossEntropyLoss()
     
-    train_metric = Accuracy(classes=train_data.classes)
-    val_metric = Accuracy(classes=val_data.classes)
-    val_frequency = 5
+#     model_ft = resnet18(pretrained=False)
+#     num_ftrs = model_ft.fc.in_features
+#     model_ft.fc = nn.Linear(num_ftrs, NUM_CLASSES) # 10 classes convertion
+    
+#     cnn_model = model_ft
+#     cnn_model = CNN()
+#     model = DeepClassifier(cnn_model)
+#     model.to(device)
+    
+#     optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
+#     loss_fn = torch.nn.CrossEntropyLoss()
+    
+#     train_metric = Accuracy(classes=train_data.classes)
+#     val_metric = Accuracy(classes=val_data.classes)
+#     val_frequency = 1
 
-    lr_scheduler = ExponentialLR(optimizer, gamma=0.9)
-    model_save_dir = Path("saved_models")
-    model_save_dir.mkdir(exist_ok=True)
-    trainer = ImgClassificationTrainer(model, 
-                    optimizer,
-                    loss_fn,
-                    lr_scheduler,
-                    train_metric,
-                    val_metric,
-                    train_data,
-                    val_data,
-                    device,
-                    1, 
-                    model_save_dir,
-                    batch_size=128, # feel free to change
-                    val_frequency = val_frequency)
-    trainer._train_epoch(10)
+#     lr_scheduler = ExponentialLR(optimizer, gamma=0.9)
+#     model_save_dir = Path("saved_models")
+#     model_save_dir.mkdir(exist_ok=True)
+#     trainer = ImgClassificationTrainer(model, 
+#                     optimizer,
+#                     loss_fn,
+#                     lr_scheduler,
+#                     train_metric,
+#                     val_metric,
+#                     train_data,
+#                     val_data,
+#                     device,
+#                     NUM_EPOCHS, 
+#                     model_save_dir,
+#                     batch_size=128, # feel free to change
+#                     val_frequency = val_frequency)
+#     # trainer._train_epoch(1)
+#     # trainer._val_epoch(1)
+#     trainer.train()
 
-if __name__ == "__main__":
-    import argparse
-    import os
-    import torch
-    import torchvision.transforms.v2 as v2
-    from pathlib import Path
-    import os
 
-    from dlvc.models.class_model import DeepClassifier # etc. change to your model
-    from dlvc.metrics import Accuracy
-    from dlvc.trainer import ImgClassificationTrainer
-    from dlvc.datasets.cifar10 import CIFAR10Dataset
-    from dlvc.datasets.dataset import Subset
-    from torchvision.models import resnet18
-    from torch.optim import AdamW
-    from torch.optim.lr_scheduler import ExponentialLR
-    # files_and_directories = os.listdir("cifar-10-batches-py")#./cifar-10-batches-py
-    # print(files_and_directories)
-    main()
+# if __name__ == "__main__":
+#     import argparse
+#     import os
+#     import torch
+#     import torchvision.transforms.v2 as v2
+#     from pathlib import Path
+#     import os
+#     import torch.nn as nn
+#     from dlvc.models.class_model import DeepClassifier # etc. change to your model
+#     from dlvc.metrics import Accuracy
+#     from dlvc.trainer import ImgClassificationTrainer
+#     from dlvc.datasets.cifar10 import CIFAR10Dataset
+#     from dlvc.datasets.dataset import Subset
+#     from torch.optim import AdamW
+#     from torch.optim.lr_scheduler import ExponentialLR
+#     # files_and_directories = os.listdir("cifar-10-batches-py")#./cifar-10-batches-py
+#     # print(files_and_directories)
+#     main()
 
 
             

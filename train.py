@@ -6,6 +6,7 @@ import torchvision.transforms.v2 as v2
 from pathlib import Path
 import os
 
+import torch.nn as nn
 from dlvc.models.class_model import DeepClassifier # etc. change to your model
 from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
@@ -44,8 +45,10 @@ def train(args):
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    resnet18_pre = resnet18(pretrained=False)
-    model = DeepClassifier(resnet18_pre)
+    model_ft = resnet18(pretrained=False)
+    num_ftrs = model_ft.fc.in_features
+    model_ft.fc = nn.Linear(num_ftrs, 10) # 10 classes convertion
+    model = DeepClassifier(model_ft)
     model.to(device)
 
     optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
