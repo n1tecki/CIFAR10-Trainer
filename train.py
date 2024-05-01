@@ -27,15 +27,31 @@ def train(args):
     ## but do not have to be used if you want to do it differently
     ## For device handling you can take a look at pytorch documentation
     
+    # Only normalization
+    # train_transform = v2.Compose([v2.ToImage(), 
+    #                         v2.ToDtype(torch.float32, scale=True),
+    #                         v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
     
-    train_transform = v2.Compose([v2.ToImage(), 
-                            v2.ToDtype(torch.float32, scale=True),
-                            v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
+    # val_transform = v2.Compose([v2.ToImage(), 
+    #                         v2.ToDtype(torch.float32, scale=True),
+    #                         v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
     
-    val_transform = v2.Compose([v2.ToImage(), 
-                            v2.ToDtype(torch.float32, scale=True),
-                            v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
-    
+    # normalization with data augumentation
+    train_transform = v2.Compose([
+        v2.ToImage(), 
+        v2.ToDtype(torch.float32, scale=True),
+        v2.RandomCrop(32, padding=4),  # Randomly crop the image to size 32x32
+        v2.RandomHorizontalFlip(),    # Randomly flip the image horizontally
+        v2.ToTensor(),                 # Convert PIL image or numpy.ndarray to tensor
+        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
+    ])
+
+    val_transform = v2.Compose([
+        v2.ToImage(), 
+        v2.ToDtype(torch.float32, scale=True),
+        v2.ToTensor(),                 # Convert PIL image or numpy.ndarray to tensor
+        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
+    ])
     
     train_data = CIFAR10Dataset(args.data_path, subset = Subset.TRAINING, transform=train_transform)
     
