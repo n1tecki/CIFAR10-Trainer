@@ -18,40 +18,28 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 
 
-
-
+    
 def train(args):
-
+    
     ### Implement this function so that it trains a specific model as described in the instruction.md file
     ## feel free to change the code snippets given here, they are just to give you an initial structure 
     ## but do not have to be used if you want to do it differently
     ## For device handling you can take a look at pytorch documentation
-    
-    # Only normalization
-    # train_transform = v2.Compose([v2.ToImage(), 
-    #                         v2.ToDtype(torch.float32, scale=True),
-    #                         v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
-    
-    # val_transform = v2.Compose([v2.ToImage(), 
-    #                         v2.ToDtype(torch.float32, scale=True),
-    #                         v2.Normalize(mean = [0.485, 0.456,0.406], std = [0.229, 0.224, 0.225])])
-    
-    # normalization with data augumentation
+
     train_transform = v2.Compose([
+        v2.RandomCrop(32, padding=4),  # Augmentation
+        v2.RandomHorizontalFlip(),  # Augmentation
         v2.ToImage(), 
         v2.ToDtype(torch.float32, scale=True),
-        v2.RandomCrop(32, padding=4),  # Randomly crop the image to size 32x32
-        v2.RandomHorizontalFlip(),    # Randomly flip the image horizontally
-        v2.ToTensor(),                 # Convert PIL image or numpy.ndarray to tensor
-        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
+        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     val_transform = v2.Compose([
         v2.ToImage(), 
         v2.ToDtype(torch.float32, scale=True),
-        v2.ToTensor(),                 # Convert PIL image or numpy.ndarray to tensor
-        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
+        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
+    
     
     train_data = CIFAR10Dataset(args.data_path, subset = Subset.TRAINING, transform=train_transform)
     
@@ -63,11 +51,12 @@ def train(args):
 
     model_ft = resnet18(pretrained=False)
     num_ftrs = model_ft.fc.in_features
+    model_ft.layer4.register_forward_hook(lambda m, inp, out: nn.functional.dropout(out, p=0.5)) # Dropout in 4th layer
     model_ft.fc = nn.Linear(num_ftrs, 10) # 10 classes convertion
     model = DeepClassifier(model_ft)
     model.to(device)
 
-    optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
+    optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True, weight_decay=0.01) # Weight decay
     loss_fn = torch.nn.CrossEntropyLoss()
     
     train_metric = Accuracy(classes=train_data.classes)
