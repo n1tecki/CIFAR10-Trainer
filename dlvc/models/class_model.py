@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from pathlib import Path
+import wandb
+import os
 
 class DeepClassifier(nn.Module):
     def __init__(self, net: nn.Module):
@@ -10,7 +12,7 @@ class DeepClassifier(nn.Module):
     def forward(self, x):
         return self.net(x)
     
-
+    # save_dir: Path
     def save(self, save_dir: Path, suffix=None):
         '''
         Saves the model, adds suffix to filename if given
@@ -19,6 +21,8 @@ class DeepClassifier(nn.Module):
         else: filename = "model.pth"
 
         torch.save(self.net.state_dict(), save_dir / filename)
+        torch.save(self.net.state_dict(), os.path.join(wandb.run.dir, filename))
+        print(f"\n MODEL:{filename} SAVED \n")
 
 
     def load(self, path):

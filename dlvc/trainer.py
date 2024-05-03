@@ -188,7 +188,7 @@ class ImgClassificationTrainer(BaseTrainer):
                 })
                 
                 if val_epoch_pc_acc > curr_val_epoch_pc_acc:
-                    self.model.save(self.training_save_dir)
+                    self.model.save(self.training_save_dir) #  suffix=
                     curr_val_epoch_pc_acc = val_epoch_pc_acc
 
             epoch_dict.update({

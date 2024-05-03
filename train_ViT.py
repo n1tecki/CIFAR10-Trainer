@@ -5,13 +5,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms.v2 as v2
-from dlvc.models.class_model import YourViT
+from dlvc.models.vit import YourViT
 from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
 from dlvc.datasets.cifar10 import CIFAR10Dataset
 from dlvc.datasets.dataset import Subset
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ExponentialLR
+from dlvc.models.class_model import DeepClassifier
 
 
 def train(args):
@@ -31,7 +32,8 @@ def train(args):
     val_data = CIFAR10Dataset(args.data_path, subset=Subset.VALIDATION, transform=val_transform)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = YourViT()
+    model_vit = YourViT()
+    model = DeepClassifier(model_vit)
     model.to(device)
 
     optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
@@ -39,7 +41,7 @@ def train(args):
 
     train_metric = Accuracy(classes=train_data.classes)
     val_metric = Accuracy(classes=val_data.classes)
-    val_frequency = 5
+    val_frequency = 1
 
     model_save_dir = Path("saved_models")
     model_save_dir.mkdir(exist_ok=True)
