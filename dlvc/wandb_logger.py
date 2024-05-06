@@ -14,8 +14,8 @@ class WandBLogger:
 
 
         if self.enabled:
-            wandb.init(entity="wojo-michaluk",
-                        project="models_evaluation_vc",
+            wandb.init(entity="mariusz-nitecki",
+                        project="deep_learning_vc_36",
                         group="group_1")
             if run_name is None:
                 wandb.run.name = wandb.run.id    

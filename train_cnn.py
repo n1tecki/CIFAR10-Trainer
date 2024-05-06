@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms.v2 as v2
 from dlvc.models.class_model import DeepClassifier
+from dlvc.models.cnn import CNN
 from dlvc.metrics import Accuracy
 from dlvc.trainer import ImgClassificationTrainer
 from dlvc.datasets.cifar10 import CIFAR10Dataset
@@ -16,14 +17,16 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 def train(args):
     train_transform = v2.Compose([
-        v2.ToTensor(),
-        v2.Resize((32, 32)), 
+        v2.ToImage(), 
+        v2.RandomCrop(32, padding=4),  # Augmentation
+        v2.RandomHorizontalFlip(0.5),  # Augmentation
+        v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
     val_transform = v2.Compose([
-        v2.ToTensor(),
-        v2.Resize((32, 32)),
+        v2.ToImage(), 
+        v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
@@ -32,7 +35,8 @@ def train(args):
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = DeepClassifier()
+    cnn = CNN()
+    model = DeepClassifier(cnn)
     model.to(device)
 
     optimizer = AdamW(model.parameters(), lr=0.001, amsgrad=True)
@@ -61,3 +65,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     train(args)
+
+
+# python train_cnn.py --data_path C:/Users/mariu/Documents/deep_learning_for_visual_computing/cifar-10-python/ --num_epochs 30

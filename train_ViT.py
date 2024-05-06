@@ -18,7 +18,7 @@ from dlvc.models.class_model import DeepClassifier
 def train(args):
     train_transform = v2.Compose([
         v2.ToTensor(),
-        v2.Resize((32, 32)),  # Ensure images are resized to fit model input
+        v2.Resize((32, 32)),
         v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
@@ -61,3 +61,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     train(args)
+
+
+

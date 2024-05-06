@@ -29,7 +29,7 @@ def train(args):
     train_transform = v2.Compose([
         v2.ToImage(), 
         v2.RandomCrop(32, padding=4),  # Augmentation
-        v2.RandomHorizontalFlip(),  # Augmentation
+        v2.RandomHorizontalFlip(0.5),  # Augmentation
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
